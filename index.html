@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRIKET.LIVE — Free IPL 2026 Streaming</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<style>
+  :root {
+    --gold: #FFD700;
+    --gold2: #FFA500;
+    --fire: #FF4500;
+    --cyan: #00F5FF;
+    --purple: #7B2FBE;
+    --dark: #05050F;
+    --card: rgba(255,255,255,0.04);
+    --glass: rgba(255,255,255,0.07);
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--dark);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor {
+    width: 14px; height: 14px;
+    background: var(--gold);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease, width 0.3s, height 0.3s, background 0.3s;
+    mix-blend-mode: difference;
+  }
+  .cursor-trail {
+    width: 38px; height: 38px;
+    border: 2px solid rgba(255,215,0,0.4);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: left 0.15s ease, top 0.15s ease, width 0.3s, height 0.3s;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 2rem;
+  }
+
+  /* ANIMATED BG MESH */
+  .mesh {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 30%, rgba(123,47,190,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 70%, rgba(255,69,0,0.25) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 50% 100%, rgba(0,245,255,0.15) 0%, transparent 70%),
+      #05050F;
+    animation: meshPulse 8s ease-in-out infinite alternate;
+  }
+  @keyframes meshPulse {
+    0%  { filter: hue-rotate(0deg) brightness(1); }
+    100% { filter: hue-rotate(20deg) brightness(1.1); }
+  }
+
+  /* CRICKET BALL ORBITS */
+  .orbit-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255,215,0,0.08);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: spin linear infinite;
+  }
+  .orbit-ring:nth-child(1) { width: 700px; height: 700px; animation-duration: 30s; }
+  .orbit-ring:nth-child(2) { width: 500px; height: 500px; animation-duration: 20s; animation-direction: reverse; border-color: rgba(0,245,255,0.06); }
+  .orbit-ring:nth-child(3) { width: 900px; height: 900px; animation-duration: 45s; border-color: rgba(255,69,0,0.05); }
+
+  @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+  .ball {
+    width: 18px; height: 18px;
+    background: radial-gradient(circle at 35% 35%, #FF6B35, #C0392B);
+    border-radius: 50%;
+    position: absolute;
+    top: -9px; left: calc(50% - 9px);
+    box-shadow: 0 0 20px rgba(255,69,0,0.8), 0 0 40px rgba(255,69,0,0.4);
+  }
+  .ball::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 10%;
+    width: 80%; height: 2px;
+    background: rgba(255,255,255,0.35);
+    border-radius: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 2.5rem;
+    backdrop-filter: blur(20px);
+    background: rgba(5,5,15,0.6);
+    border-bottom: 1px solid rgba(255,215,0,0.1);
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.08em;
+    background: linear-gradient(90deg, var(--gold), var(--gold2), var(--fire));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .logo span { color: var(--cyan); -webkit-text-fill-color: var(--cyan); }
+  nav ul { list-style: none; display: flex; gap: 2rem; }
+  nav ul li a {
+    text-decoration: none;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  nav ul li a:hover { color: var(--gold); }
+  .nav-cta {
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000 !important;
+    padding: 0.5rem 1.3rem;
+    border-radius: 100px;
+    font-weight: 700 !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+    color: #000 !important;
+    -webkit-text-fill-color: #000 !important;
+  }
+  .nav-cta:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(255,165,0,0.5) !important; }
+
+  /* HERO CONTENT */
+  .hero-content {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    max-width: 900px;
+  }
+
+  .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255,69,0,0.15);
+    border: 1px solid rgba(255,69,0,0.4);
+    color: var(--fire);
+    padding: 0.4rem 1rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    animation: pulse-badge 2s ease-in-out infinite;
+  }
+  .live-dot {
+    width: 8px; height: 8px;
+    background: var(--fire);
+    border-radius: 50%;
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+  @keyframes pulse-badge {
+    0%,100% { box-shadow: 0 0 0 0 rgba(255,69,0,0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(255,69,0,0); }
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 12vw, 11rem);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    background: linear-gradient(160deg, #fff 0%, var(--gold) 40%, var(--gold2) 70%, var(--fire) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: titleReveal 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+    text-shadow: none;
+  }
+  @keyframes titleReveal {
+    from { opacity: 0; transform: translateY(60px) scale(0.95); filter: blur(10px); }
+    to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+
+  .hero-sub {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    color: rgba(255,255,255,0.65);
+    margin: 1.2rem 0 2.5rem;
+    font-weight: 400;
+    animation: titleReveal 1s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .hero-sub strong { color: var(--cyan); font-weight: 700; }
+
+  .cta-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: titleReveal 1s 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1rem 2.2rem;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 50%, var(--fire) 100%);
+    background-size: 200% auto;
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    border-radius: 100px;
+    border: none;
+    cursor: none;
+    text-decoration: none;
+    transition: background-position 0.4s, transform 0.2s, box-shadow 0.3s;
+    box-shadow: 0 10px 40px rgba(255,165,0,0.4);
+    letter-spacing: 0.02em;
+  }
+  .btn-primary:hover {
+    background-position: right center;
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 20px 60px rgba(255,165,0,0.6), 0 0 80px rgba(255,69,0,0.3);
+  }
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1rem 2.2rem;
+    background: var(--glass);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    border-radius: 100px;
+    text-decoration: none;
+    transition: transform 0.2s, border-color 0.3s, background 0.3s;
+    backdrop-filter: blur(10px);
+    cursor: none;
+  }
+  .btn-secondary:hover {
+    transform: translateY(-3px);
+    border-color: var(--cyan);
+    background: rgba(0,245,255,0.08);
+    box-shadow: 0 0 40px rgba(0,245,255,0.2);
+  }
+
+  /* LIVE MATCH TICKER */
+  .ticker-wrap {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    overflow: hidden;
+    background: linear-gradient(90deg, rgba(255,69,0,0.9), rgba(123,47,190,0.9));
+    padding: 0.6rem 0;
+    z-index: 20;
+  }
+  .ticker {
+    display: flex;
+    gap: 4rem;
+    white-space: nowrap;
+    animation: ticker 30s linear infinite;
+  }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .ticker-item {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .ticker-item::before { content: '🏏'; }
+
+  /* MATCHES SECTION */
+  .matches {
+    padding: 6rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .section-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.25em;
+    color: var(--cyan);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    line-height: 1;
+    background: linear-gradient(90deg, #fff, rgba(255,255,255,0.5));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 3rem;
+  }
+
+  .match-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .match-card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 1.8rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), border-color 0.3s, box-shadow 0.3s;
+    cursor: none;
+    backdrop-filter: blur(10px);
+  }
+  .match-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 60%, rgba(255,215,0,0.04) 100%);
+    pointer-events: none;
+  }
+  .match-card.live-card {
+    border-color: rgba(255,69,0,0.3);
+    background: rgba(255,69,0,0.05);
+  }
+  .match-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    border-color: rgba(255,215,0,0.3);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4), 0 0 40px rgba(255,215,0,0.08);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .match-status {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    border-radius: 100px;
+  }
+  .status-live {
+    background: rgba(255,69,0,0.2);
+    border: 1px solid rgba(255,69,0,0.5);
+    color: #FF6B35;
+    animation: pulse-badge 2s infinite;
+  }
+  .status-upcoming {
+    background: rgba(0,245,255,0.1);
+    border: 1px solid rgba(0,245,255,0.3);
+    color: var(--cyan);
+  }
+  .match-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.1em;
+  }
+
+  .teams {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    flex: 1;
+  }
+  .team-logo {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    position: relative;
+  }
+  .team-logo::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, var(--gold), var(--fire)) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .match-card:hover .team-logo::after { opacity: 1; }
+
+  .team-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+  .team-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+  }
+
+  .vs-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    color: rgba(255,255,255,0.2);
+    flex: 0 0 auto;
+    padding: 0 1rem;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .match-venue {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.4);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .watch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.1rem;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.78rem;
+    border-radius: 100px;
+    border: none;
+    cursor: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .watch-btn:hover { transform: scale(1.05); box-shadow: 0 8px 30px rgba(255,165,0,0.5); }
+
+  /* FEATURE STRIP */
+  .features {
+    padding: 5rem 2rem;
+    background: linear-gradient(180deg, transparent 0%, rgba(123,47,190,0.08) 50%, transparent 100%);
+  }
+  .features-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+  .feature-card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    transition: transform 0.3s, border-color 0.3s;
+    cursor: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--fire));
+    transform: scaleX(0);
+    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  .feature-card:hover { transform: translateY(-5px); border-color: rgba(255,215,0,0.15); }
+  .feature-card:hover::after { transform: scaleX(1); }
+
+  .feat-icon {
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+    display: block;
+    filter: drop-shadow(0 0 12px rgba(255,215,0,0.5));
+  }
+  .feat-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    margin-bottom: 0.4rem;
+  }
+  .feat-desc {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.5;
+  }
+
+  /* STATS BAND */
+  .stats-band {
+    padding: 4rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4.5rem;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--gold), var(--fire));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 0.3rem;
+  }
+
+  /* WATCH NOW BANNER */
+  .banner {
+    margin: 2rem auto 5rem;
+    max-width: 1100px;
+    padding: 0 2rem;
+  }
+  .banner-inner {
+    background: linear-gradient(135deg, rgba(255,215,0,0.12) 0%, rgba(255,69,0,0.12) 50%, rgba(123,47,190,0.12) 100%);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 28px;
+    padding: 3.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+  }
+  .banner-inner::before {
+    content: '🏆';
+    position: absolute;
+    right: 3rem; top: 50%;
+    transform: translateY(-50%);
+    font-size: 10rem;
+    opacity: 0.06;
+    pointer-events: none;
+  }
+  .banner-text h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    line-height: 1;
+    margin-bottom: 0.6rem;
+    color: #fff;
+  }
+  .banner-text p { color: rgba(255,255,255,0.6); font-size: 0.95rem; max-width: 400px; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 3rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    opacity: 0.6;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* FLOATING PARTICLES */
+  .particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .particle {
+    position: absolute;
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    animation: float linear infinite;
+    opacity: 0;
+  }
+  @keyframes float {
+    0%   { transform: translateY(110vh) translateX(0); opacity: 0; }
+    10%  { opacity: 0.8; }
+    90%  { opacity: 0.5; }
+    100% { transform: translateY(-10vh) translateX(calc(var(--drift) * 1px)); opacity: 0; }
+  }
+
+  /* VIDEO PLAYER */
+  .player-wrap {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    background: #0a0a18;
+    border: 1px solid rgba(255,255,255,0.08);
+    aspect-ratio: 16/7;
+  }
+  .player-wrap video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .stream-setup {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    background: rgba(5,5,15,0.85);
+    backdrop-filter: blur(12px);
+    z-index: 5;
+    padding: 2rem;
+  }
+  .stream-setup h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 0.05em;
+    color: var(--gold);
+  }
+  .stream-setup p { font-size: 0.85rem; color: rgba(255,255,255,0.5); text-align:center; max-width:480px; }
+  .stream-input-row {
+    display: flex;
+    gap: 0.8rem;
+    width: 100%;
+    max-width: 560px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .stream-input {
+    flex: 1;
+    min-width: 260px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 100px;
+    padding: 0.75rem 1.4rem;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    cursor: text;
+  }
+  .stream-input::placeholder { color: rgba(255,255,255,0.35); }
+  .stream-input:focus { border-color: var(--gold); }
+  .stream-load-btn {
+    padding: 0.75rem 1.8rem;
+    background: linear-gradient(135deg, var(--gold), var(--fire));
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stream-load-btn:hover { transform: scale(1.05); box-shadow: 0 8px 30px rgba(255,165,0,0.5); }
+  .stream-status {
+    font-size: 0.78rem;
+    color: var(--cyan);
+    letter-spacing: 0.05em;
+  }
+  .player-overlay-label {
+    position: absolute;
+    bottom: 1.2rem; left: 1.5rem;
+    z-index: 4;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.85);
+    pointer-events: none;
+    display: none;
+  }
+  .player-overlay-label span { color: var(--gold); }
+
+  .status-result {
+    background: rgba(0,245,100,0.1);
+    border: 1px solid rgba(0,245,100,0.3);
+    color: #00f564;
+  }
+
+  /* GLARE EFFECT ON CARDS */
+  .glare {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.06) 0%, transparent 60%);
+    pointer-events: none;
+    transition: opacity 0.3s;
+    opacity: 0;
+  }
+  .match-card:hover .glare { opacity: 1; }
+
+  /* PULSE RINGS */
+  .pulse-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255,69,0,0.3);
+    animation: expandRing 3s ease-out infinite;
+  }
+  @keyframes expandRing {
+    0%   { transform: translate(-50%,-50%) scale(0); opacity: 0.8; }
+    100% { transform: translate(-50%,-50%) scale(4); opacity: 0; }
+  }
+
+  /* VIDEO PREVIEW */
+  .video-preview {
+    max-width: 1100px;
+    margin: 0 auto 6rem;
+    padding: 0 2rem;
+  }
+  .video-frame {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    background: #0a0a18;
+    border: 1px solid rgba(255,255,255,0.08);
+    aspect-ratio: 16/7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: none;
+  }
+  .video-bg {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(135deg, rgba(123,47,190,0.3), rgba(255,69,0,0.2)),
+      repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.02) 40px, rgba(255,255,255,0.02) 41px),
+      repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.02) 40px, rgba(255,255,255,0.02) 41px);
+    animation: meshPulse 5s ease-in-out infinite alternate;
+  }
+  .play-circle {
+    position: relative;
+    z-index: 2;
+    width: 90px; height: 90px;
+    background: linear-gradient(135deg, var(--gold), var(--fire));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    box-shadow: 0 0 60px rgba(255,165,0,0.5), 0 0 120px rgba(255,69,0,0.3);
+    animation: playPulse 2s ease-in-out infinite;
+    transition: transform 0.3s;
+  }
+  .video-frame:hover .play-circle { transform: scale(1.1); }
+  @keyframes playPulse {
+    0%,100% { box-shadow: 0 0 60px rgba(255,165,0,0.5), 0 0 120px rgba(255,69,0,0.3); }
+    50% { box-shadow: 0 0 80px rgba(255,165,0,0.8), 0 0 160px rgba(255,69,0,0.5); }
+  }
+  .video-label {
+    position: absolute;
+    bottom: 1.5rem; left: 1.5rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.8);
+    z-index: 2;
+  }
+  .video-label span { color: var(--gold); }
+
+  /* SCROLL INDICATOR */
+  .scroll-ind {
+    position: absolute;
+    bottom: 4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.5;
+    z-index: 10;
+    animation: bounce 2s ease-in-out infinite;
+  }
+  .scroll-ind span { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; }
+  @keyframes bounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* TEAMS MARQUEE */
+  .teams-marquee {
+    overflow: hidden;
+    padding: 3rem 0;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 5rem;
+  }
+  .marquee-track {
+    display: flex;
+    gap: 3rem;
+    animation: marquee 20s linear infinite;
+    width: max-content;
+  }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+  .team-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.6rem 1.4rem;
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 100px;
+    white-space: nowrap;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    nav ul { display: none; }
+    .banner-inner { text-align: center; justify-content: center; }
+    .banner-inner::before { display: none; }
+    .stats-row { gap: 2rem; }
+    .stat-num { font-size: 3rem; }
+    footer { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">CRIKET<span>.</span>LIVE</div>
+  <ul>
+    <li><a href="#">Matches</a></li>
+    <li><a href="#">Schedule</a></li>
+    <li><a href="#">Teams</a></li>
+    <li><a href="#">Highlights</a></li>
+    <li><a href="#" class="nav-cta">Watch Free</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="mesh"></div>
+
+  <!-- ORBIT RINGS -->
+  <div class="orbit-ring"><div class="ball"></div></div>
+  <div class="orbit-ring"><div class="ball"></div></div>
+  <div class="orbit-ring"><div class="ball"></div></div>
+
+  <!-- PARTICLES -->
+  <div class="particles" id="particles"></div>
+
+  <div class="hero-content">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      Live Now · IPL 2026 — Match 49
+    </div>
+
+    <h1 class="hero-title">WATCH<br>IPL<br>FREE</h1>
+
+    <p class="hero-sub">
+      Every boundary. Every six. Every wicket.<br>
+      <strong>Stream all 74 IPL 2026 matches</strong> in stunning HD — completely free.<br>
+      <strong>Defending Champions: Royal Challengers Bengaluru 🏆</strong>
+    </p>
+
+    <div class="cta-group">
+      <a href="#" class="btn-primary">
+        <span>▶</span> Watch Now — Free
+      </a>
+      <a href="#" class="btn-secondary">
+        📅 Full Schedule
+      </a>
+    </div>
+  </div>
+
+  <div class="scroll-ind">
+    <span>Scroll</span>
+    <svg width="20" height="28" viewBox="0 0 20 28" fill="none">
+      <rect x="1" y="1" width="18" height="26" rx="9" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+      <circle cx="10" cy="8" r="3" fill="rgba(255,215,0,0.7)">
+        <animate attributeName="cy" values="8;16;8" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="1;0.2;1" dur="2s" repeatCount="indefinite"/>
+      </circle>
+    </svg>
+  </div>
+
+  <!-- LIVE TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker" id="ticker"></div>
+  </div>
+</section>
+
+<!-- TEAMS MARQUEE -->
+<div class="teams-marquee">
+  <div class="marquee-track" id="marqueeTrack"></div>
+</div>
+
+<!-- LIVE MATCHES -->
+<section class="matches">
+  <div class="section-label">🔴 Live & Upcoming</div>
+  <h2 class="section-title">Today's Matches</h2>
+  <div class="match-grid" id="matchGrid"></div>
+</section>
+
+<!-- VIDEO PLAYER (LIVE STREAM) -->
+<div class="video-preview">
+  <div class="section-label" style="max-width:1100px;margin:0 auto 1rem;padding:0 2rem">📺 Live Stream</div>
+  <div class="player-wrap" id="playerWrap">
+    <video id="liveVideo" controls muted playsinline></video>
+
+    <!-- Setup overlay (shown until stream is loaded) -->
+    <div class="stream-setup" id="streamSetup">
+      <h3>▶ Paste Your Stream URL</h3>
+      <p>Enter an HLS (.m3u8) or direct video stream URL below. You can get a free stream key from YouTube Live, Twitch, or any RTMP/HLS server.</p>
+      <div class="stream-input-row">
+        <input class="stream-input" id="streamUrl" type="text" placeholder="https://your-stream.com/live/stream.m3u8" autocomplete="off" />
+        <button class="stream-load-btn" onclick="loadStream()">▶ Watch</button>
+      </div>
+      <div class="stream-status" id="streamStatus">Waiting for stream URL…</div>
+    </div>
+
+    <!-- Label shown while playing -->
+    <div class="player-overlay-label" id="playerLabel">LIVE: <span id="playerLabelText">IPL 2026</span></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="features-inner" id="featuresGrid"></div>
+</section>
+
+<!-- STATS BAND -->
+<div class="stats-band">
+  <div class="stats-row" id="statsRow"></div>
+</div>
+
+<!-- BANNER -->
+<div class="banner">
+  <div class="banner-inner">
+    <div class="banner-text">
+      <h2>Zero Cost.<br>100% IPL.</h2>
+      <p>No subscription. No credit card. Just pure cricket joy — every match, every team, every moment.</p>
+    </div>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap">
+      <a href="#" class="btn-primary" style="font-size:1.1rem;padding:1.1rem 2.5rem;">🏏 Start Watching Free</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.1em;opacity:0.5">CRIKET.LIVE</div>
+  <div>© 2026 Criket.live · All 74 IPL 2026 Matches · Free Forever</div>
+  <div style="display:flex;gap:1.5rem">
+    <a href="#" style="color:inherit;text-decoration:none">Privacy</a>
+    <a href="#" style="color:inherit;text-decoration:none">Terms</a>
+    <a href="#" style="color:inherit;text-decoration:none">Contact</a>
+  </div>
+</footer>
+
+<script>
+// CURSOR
+const cursor = document.getElementById('cursor');
+const trail = document.getElementById('cursorTrail');
+let mx = 0, my = 0, tx = 0, ty = 0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top = my + 'px';
+});
+setInterval(() => {
+  tx += (mx - tx) * 0.12;
+  ty += (my - ty) * 0.12;
+  trail.style.left = tx + 'px';
+  trail.style.top = ty + 'px';
+}, 16);
+
+document.querySelectorAll('a,button,.match-card,.feature-card,.video-frame').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.width = '20px';
+    cursor.style.height = '20px';
+    trail.style.width = '55px';
+    trail.style.height = '55px';
+    trail.style.borderColor = 'rgba(255,215,0,0.5)';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.width = '14px';
+    cursor.style.height = '14px';
+    trail.style.width = '38px';
+    trail.style.height = '38px';
+    trail.style.borderColor = 'rgba(255,215,0,0.4)';
+  });
+});
+
+// PARTICLES
+const particleContainer = document.getElementById('particles');
+const colors = ['#FFD700','#FF4500','#00F5FF','#FF6B35','#fff'];
+for (let i = 0; i < 60; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const x = Math.random() * 100;
+  const drift = (Math.random() - 0.5) * 200;
+  const dur = 8 + Math.random() * 15;
+  const delay = Math.random() * 15;
+  const size = 1 + Math.random() * 3;
+  p.style.cssText = `left:${x}%;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${dur}s;animation-delay:${delay}s;--drift:${drift};box-shadow:0 0 6px currentColor`;
+  particleContainer.appendChild(p);
+}
+
+// TICKER
+const tickerData = [
+  'MATCH 49 — SRH vs PBKS · TODAY 7:30 PM · Hyderabad',
+  'MATCH 48 — DC 155/7 vs CSK 159/2 · CSK WON by 8 wickets',
+  'MATCH 50 — LSG vs RCB · TOMORROW 7:30 PM · Lucknow',
+  'MATCH 51 — DC vs KKR · Fri 8 May · Arun Jaitley Stadium',
+  'MATCH 52 — RR vs GT · Sat 9 May · Sawai Mansingh Stadium',
+  'IPL 2026 · Defending Champions: Royal Challengers Bengaluru 🏆',
+  'PBKS lead standings · Top 4 fiercely contested — Revenge Week!',
+];
+const tickerEl = document.getElementById('ticker');
+const fullTicker = [...tickerData, ...tickerData];
+tickerEl.innerHTML = fullTicker.map(t => `<div class="ticker-item">${t}</div>`).join('');
+
+// TEAMS MARQUEE
+const teams = [
+  {emoji:'🔵','name':'Mumbai Indians'},
+  {emoji:'💛','name':'Chennai Super Kings'},
+  {emoji:'🔴','name':'Royal Challengers'},
+  {emoji:'💜','name':'Kolkata Knight Riders'},
+  {emoji:'🟠','name':'Sunrisers Hyderabad'},
+  {emoji:'🩵','name':'Delhi Capitals'},
+  {emoji:'🩷','name':'Punjab Kings'},
+  {emoji:'🟡','name':'Rajasthan Royals'},
+  {emoji:'🟦','name':'Gujarat Titans'},
+  {emoji:'🟢','name':'Lucknow Super Giants'},
+];
+const track = document.getElementById('marqueeTrack');
+const doubled = [...teams,...teams,...teams,...teams];
+track.innerHTML = doubled.map(t => `<div class="team-pill"><span>${t.emoji}</span>${t.name}</div>`).join('');
+
+// MATCHES
+const matches = [
+  { num:'MATCH 49', team1:{name:'SRH',emoji:'🟠',score:'—'}, team2:{name:'PBKS',emoji:'🩷',score:'—'}, status:'live', venue:'Rajiv Gandhi Intl., Hyderabad · 7:30 PM IST' },
+  { num:'MATCH 48', team1:{name:'DC',emoji:'🩵',score:'155/7 (20)'}, team2:{name:'CSK',emoji:'💛',score:'159/2 (17.3)'}, status:'result', venue:'Arun Jaitley Stadium · CSK Won' },
+  { num:'MATCH 50', team1:{name:'LSG',emoji:'🟢',score:'—'}, team2:{name:'RCB',emoji:'🔴',score:'—'}, status:'upcoming', venue:'BRSABV Stadium, Lucknow · Thu 7 May 7:30 PM' },
+  { num:'MATCH 51', team1:{name:'DC',emoji:'🩵',score:'—'}, team2:{name:'KKR',emoji:'💜',score:'—'}, status:'upcoming', venue:'Arun Jaitley Stadium · Fri 8 May 7:30 PM' },
+  { num:'MATCH 52', team1:{name:'RR',emoji:'🟡',score:'—'}, team2:{name:'GT',emoji:'🟦',score:'—'}, status:'upcoming', venue:'Sawai Mansingh Stadium · Sat 9 May 7:30 PM' },
+];
+const grid = document.getElementById('matchGrid');
+grid.innerHTML = matches.map(m => `
+  <div class="match-card ${m.status==='live'?'live-card':''}">
+    <div class="glare"></div>
+    <div class="card-top">
+      <div class="match-status ${m.status==='live'?'status-live':m.status==='result'?'status-result':'status-upcoming'}">
+        ${m.status==='live'?'🔴 LIVE':m.status==='result'?'✅ Result':'⏰ Upcoming'}
+      </div>
+      <div class="match-num">${m.num}</div>
+    </div>
+    <div class="teams">
+      <div class="team">
+        <div class="team-logo">${m.team1.emoji}</div>
+        <div class="team-name">${m.team1.name}</div>
+        ${m.team1.score!=='—'?`<div class="team-score">${m.team1.score}</div>`:''}
+      </div>
+      <div class="vs-badge">VS</div>
+      <div class="team">
+        <div class="team-logo">${m.team2.emoji}</div>
+        <div class="team-name">${m.team2.name}</div>
+        ${m.team2.score!=='—'?`<div class="team-score">${m.team2.score}</div>`:''}
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="match-venue">📍 ${m.venue}</div>
+      <button class="watch-btn" onclick="openStream('${m.team1.name} vs ${m.team2.name}')">▶ ${m.status==='live'?'Watch Live':m.status==='result'?'Highlights':'Remind Me'}</button>
+    </div>
+  </div>
+`).join('');
+
+// GLARE EFFECT
+document.querySelectorAll('.match-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+    const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+    card.querySelector('.glare').style.setProperty('--mx', x + '%');
+    card.querySelector('.glare').style.setProperty('--my', y + '%');
+  });
+});
+
+// FEATURES
+const features = [
+  { icon:'📺', title:'4K Ultra HD', desc:'Crystal-clear streams with zero buffering. IPL as it was meant to be seen.' },
+  { icon:'🆓', title:'100% Free', desc:'No subscription, no credit card, no hidden fees. Cricket is for everyone.' },
+  { icon:'⚡', title:'Instant Start', desc:'One click and you\'re watching. No downloads, no sign-up needed.' },
+  { icon:'📱', title:'Any Device', desc:'Phone, tablet, laptop, smart TV — watch from anywhere, anytime.' },
+  { icon:'🔔', title:'Match Alerts', desc:'Never miss a match with smart notifications for your favourite teams.' },
+  { icon:'🏆', title:'All 74 Matches', desc:'Every single IPL fixture — group stage, playoffs and the final.' },
+  { icon:'🎙️', title:'Multi-Language', desc:'Hindi, English, Tamil, Telugu & more. Your language, your cricket.' },
+  { icon:'📊', title:'Live Stats', desc:'Ball-by-ball commentary, scorecards and player stats in real time.' },
+];
+document.getElementById('featuresGrid').innerHTML = features.map(f => `
+  <div class="feature-card">
+    <span class="feat-icon">${f.icon}</span>
+    <div class="feat-title">${f.title}</div>
+    <p class="feat-desc">${f.desc}</p>
+  </div>
+`).join('');
+
+// STATS
+const stats = [
+  { num:'74', label:'IPL 2026 Matches' },
+  { num:'10', label:'Teams' },
+  { num:'4K', label:'Stream Quality' },
+  { num:'0₹', label:'Cost to Watch' },
+  { num:'49', label:'Matches Played' },
+];
+document.getElementById('statsRow').innerHTML = stats.map(s => `
+  <div class="stat-item">
+    <span class="stat-num">${s.num}</span>
+    <div class="stat-label">${s.label}</div>
+  </div>
+`).join('');
+
+// CARD TILT
+document.querySelectorAll('.match-card, .feature-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    card.style.transform = `translateY(-6px) rotateX(${y*-8}deg) rotateY(${x*8}deg) scale(1.01)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+  });
+});
+
+// SCROLL REVEAL
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.animation = 'titleReveal 0.8s cubic-bezier(0.16,1,0.3,1) both';
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.match-card, .feature-card, .stat-item').forEach((el, i) => {
+  el.style.opacity = '0';
+  el.style.animationDelay = `${i * 0.07}s`;
+  observer.observe(el);
+});
+
+// COUNTER ANIMATION
+function animateCounter(el, target) {
+  const isNum = !isNaN(parseInt(target));
+  if (!isNum) return;
+  const num = parseInt(target);
+  const suffix = target.replace(/[0-9]/g, '');
+  let current = 0;
+  const step = Math.ceil(num / 60);
+  const interval = setInterval(() => {
+    current = Math.min(current + step, num);
+    el.textContent = current + suffix;
+    if (current >= num) clearInterval(interval);
+  }, 25);
+}
+
+const statObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const el = entry.target.querySelector('.stat-num');
+      animateCounter(el, el.textContent);
+      statObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.stat-item').forEach(el => statObserver.observe(el));
+
+// ─── HLS LIVE STREAM PLAYER ───────────────────────────────
+let hlsInstance = null;
+
+function loadStream(urlOverride, labelOverride) {
+  const urlInput = document.getElementById('streamUrl');
+  const url = urlOverride || (urlInput && urlInput.value.trim());
+  const statusEl = document.getElementById('streamStatus');
+  const setupEl = document.getElementById('streamSetup');
+  const video = document.getElementById('liveVideo');
+  const label = document.getElementById('playerLabel');
+  const labelText = document.getElementById('playerLabelText');
+
+  if (!url) {
+    if (statusEl) statusEl.textContent = '⚠️ Please enter a stream URL first.';
+    return;
+  }
+
+  if (statusEl) statusEl.textContent = '⏳ Connecting to stream…';
+
+  if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+
+  const isHLS = url.includes('.m3u8') || url.includes('m3u8');
+
+  if (isHLS && Hls.isSupported()) {
+    hlsInstance = new Hls({ enableWorker: true, lowLatencyMode: true });
+    hlsInstance.loadSource(url);
+    hlsInstance.attachMedia(video);
+    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+      video.play().catch(() => {});
+      if (setupEl) setupEl.style.display = 'none';
+      if (label) { label.style.display = 'block'; }
+      if (labelText) labelText.textContent = labelOverride || 'IPL 2026 — LIVE';
+    });
+    hlsInstance.on(Hls.Events.ERROR, (_, data) => {
+      if (data.fatal && statusEl) statusEl.textContent = '❌ Stream error: ' + (data.details || 'check URL');
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl') && isHLS) {
+    // Native HLS (Safari/iOS)
+    video.src = url;
+    video.addEventListener('loadedmetadata', () => {
+      video.play().catch(() => {});
+      if (setupEl) setupEl.style.display = 'none';
+      if (label) label.style.display = 'block';
+      if (labelText) labelText.textContent = labelOverride || 'IPL 2026 — LIVE';
+    });
+  } else {
+    // Direct MP4 / other video
+    video.src = url;
+    video.addEventListener('canplay', () => {
+      video.play().catch(() => {});
+      if (setupEl) setupEl.style.display = 'none';
+      if (label) label.style.display = 'block';
+      if (labelText) labelText.textContent = labelOverride || 'IPL 2026 — LIVE';
+    }, { once: true });
+    video.addEventListener('error', () => {
+      if (statusEl) statusEl.textContent = '❌ Cannot play this URL. Check format/CORS.';
+    }, { once: true });
+  }
+}
+
+function openStream(matchLabel) {
+  const setupEl = document.getElementById('streamSetup');
+  const labelInput = document.getElementById('streamUrl');
+  if (setupEl) setupEl.style.display = 'flex';
+  if (labelInput) labelInput.placeholder = 'Paste stream URL for ' + matchLabel + '…';
+  document.querySelector('.video-preview')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// Allow Enter key in stream input
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('streamUrl');
+  if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') loadStream(); });
+});
+
+</script>
+</body>
+</html>
